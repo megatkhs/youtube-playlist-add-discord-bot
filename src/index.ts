@@ -5,7 +5,7 @@ import { createYoutubeClient } from "./youtube";
 import { setMonthlySchedule } from "./schedule";
 import { TextChannel } from "discord.js";
 
-console.info("Bot起動中...");
+console.log("Bot起動中...");
 
 const discord = createDiscordClient();
 const youtube = createYoutubeClient();
@@ -16,9 +16,9 @@ discord.on(Events.MessageCreate, async (ctx) => {
   if (ctx.author.bot) return;
   const currentDate = new Date();
 
-  console.info("=========");
-  console.info(ctx.content);
-  console.info(
+  console.log("=========");
+  console.log(ctx.content);
+  console.log(
     "currentDate:",
     dayjs(currentDate).format("YYYY-MM-DDTHH:mm:ssZ[Z]")
   );
@@ -69,8 +69,8 @@ discord.on(Events.MessageCreate, async (ctx) => {
 });
 
 setMonthlySchedule(async (currentDate) => {
-  console.info("=========");
-  console.info(
+  console.log("=========");
+  console.log(
     "月次バッチ実行中",
     dayjs(currentDate).format("YYYY-MM-DDTHH:mm:ssZ[Z]")
   );
@@ -88,7 +88,7 @@ setMonthlySchedule(async (currentDate) => {
 });
 
 await discord.login();
-console.info(
+console.log(
   "Botが正常に起動しました",
   dayjs().format("YYYY-MM-DDTHH:mm:ssZ[Z]")
 );
