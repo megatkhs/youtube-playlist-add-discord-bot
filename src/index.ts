@@ -12,7 +12,7 @@ const youtube = createYoutubeClient();
 const prisma = createPrismaClient();
 
 discord.on(Events.MessageCreate, async (ctx) => {
-  if (ctx.channelId !== Bun.env.DISCORD_CHANNEL_ID) return;
+  if (ctx.channelId !== process.env.DISCORD_CHANNEL_ID) return;
   if (ctx.author.bot) return;
   const currentDate = new Date();
 

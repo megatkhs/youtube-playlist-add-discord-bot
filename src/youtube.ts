@@ -4,15 +4,15 @@ import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport
 
 export function createYoutubeClient() {
   const auth = new google.auth.OAuth2({
-    clientId: Bun.env.YOUTUBE_API_CLIENT_ID,
-    clientSecret: Bun.env.YOUTUBE_API_CLIENT_SECRET,
+    clientId: process.env.YOUTUBE_API_CLIENT_ID,
+    clientSecret: process.env.YOUTUBE_API_CLIENT_SECRET,
   });
   auth.credentials = {
-    access_token: Bun.env.YOUTUBE_API_ACCESS_TOKEN,
-    refresh_token: Bun.env.YOUTUBE_API_REFRESH_TOKEN,
-    scope: Bun.env.YOUTUBE_API_SCOPE,
-    token_type: Bun.env.YOUTUBE_API_TOKEN_TYPE,
-    expiry_date: Number(Bun.env.YOUTUBE_API_EXPIRY_DATE),
+    access_token: process.env.YOUTUBE_API_ACCESS_TOKEN,
+    refresh_token: process.env.YOUTUBE_API_REFRESH_TOKEN,
+    scope: process.env.YOUTUBE_API_SCOPE,
+    token_type: process.env.YOUTUBE_API_TOKEN_TYPE,
+    expiry_date: Number(process.env.YOUTUBE_API_EXPIRY_DATE),
   };
 
   const client = new youtube_v3.Youtube({ auth });
