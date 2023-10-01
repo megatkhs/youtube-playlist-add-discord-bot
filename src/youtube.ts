@@ -1,6 +1,5 @@
 import { google, youtube_v3 } from "googleapis";
 import dayjs from "dayjs";
-import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
 
 export function createYoutubeClient() {
   const auth = new google.auth.OAuth2({
