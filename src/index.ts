@@ -5,6 +5,7 @@ import { createYoutubeClient } from "./youtube";
 import { setMonthlySchedule } from "./schedule";
 import { TextChannel } from "discord.js";
 
+process.env.TZ = "Japan";
 console.info("Bot起動中...");
 
 const discord = createDiscordClient();
