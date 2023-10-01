@@ -69,7 +69,9 @@ async function main() {
     }
   });
 
-  setMonthlySchedule(async (currentDate) => {
+  setMonthlySchedule(async () => {
+    const currentDate = new Date();
+
     console.log("=========");
     console.log(
       "月次バッチ実行中",
