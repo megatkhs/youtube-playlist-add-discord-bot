@@ -17,7 +17,7 @@ export function createPrismaClient() {
   };
 
   /** プレイリストIDをDBから取得する */
-  const findPlaylistId = async (date: Date) => {
+  const findPlaylistIdByDate = async (date: Date) => {
     try {
       const result = await client.playlist.findFirst({
         select: {
@@ -33,9 +33,23 @@ export function createPrismaClient() {
     }
   };
 
+  /** 全部入りプレイリストのIDをDBから取得する */
+  const findAllInPlaylistId = async () => {
+    const result = await client.playlist.findFirst({
+      select: {
+        playlistId: true,
+      },
+      where: {
+        targetMonth: "ALL_IN",
+      },
+    });
+    return result?.playlistId!;
+  };
+
   return {
     savePlaylistId,
-    findPlaylistId,
+    findPlaylistIdByDate,
+    findAllInPlaylistId,
     client,
   };
 }

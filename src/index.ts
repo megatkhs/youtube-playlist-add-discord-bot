@@ -3,7 +3,7 @@ import { Events, createDiscordClient } from "./discord";
 import { createPrismaClient } from "./prisma";
 import { createYoutubeClient } from "./youtube";
 import { setMonthlySchedule } from "./schedule";
-import { TextChannel } from "discord.js";
+import { Message, TextChannel } from "discord.js";
 
 async function main() {
   console.log("Bot起動中...");
@@ -47,11 +47,18 @@ async function main() {
       return;
     }
 
-    const playlistId = await getOrCreateCurrentPlaylistId(currentDate);
-    console.log("playlistId:", playlistId);
     console.log("videoId:", videoId);
 
-    if (await youtube.checkVideoAlreadyExistsInPlaylist(playlistId, videoId)) {
+    console.log("-----");
+    console.log("今月のプレイリスト");
+    const monthlyPlaylistId = await getOrCreateCurrentPlaylistId(currentDate);
+    console.log("playlistId:", monthlyPlaylistId);
+    if (
+      await youtube.checkVideoAlreadyExistsInPlaylist(
+        monthlyPlaylistId,
+        videoId
+      )
+    ) {
       console.error("=> Error: すでに存在している動画");
       await ctx.react("🤔");
       return;
@@ -59,12 +66,32 @@ async function main() {
 
     // プレイリストに追加する
     try {
-      await youtube.insertVideoIntoPlaylist(playlistId, videoId);
+      await youtube.insertVideoIntoPlaylist(monthlyPlaylistId, videoId);
       console.log("=> 成功");
       await ctx.react("🥳");
     } catch {
       console.error("=> Error: 何らかの理由で追加できなかった");
       await ctx.react("🚫");
+      return;
+    }
+
+    console.log("-----");
+    console.log("全部入りプレイリスト");
+    const allInPlaylistId = await prisma.findAllInPlaylistId();
+    console.log("playlistId:", allInPlaylistId);
+    if (
+      await youtube.checkVideoAlreadyExistsInPlaylist(allInPlaylistId, videoId)
+    ) {
+      console.error("=> Error: すでに存在している動画");
+      return;
+    }
+
+    // プレイリストに追加する
+    try {
+      await youtube.insertVideoIntoPlaylist(allInPlaylistId, videoId);
+      console.log("=> 成功");
+    } catch {
+      console.error("=> Error: 何らかの理由で追加できなかった");
       return;
     }
   });
@@ -74,7 +101,7 @@ async function main() {
 
     console.log("=========");
     console.log(
-      "月次バッチ実行中",
+      "月次バッチ実行中:",
       dayjs(currentDate).format("YYYY/MM/DD HH:mm:ss")
     );
     let playlistId = await getOrCreateCurrentPlaylistId(currentDate);
@@ -96,7 +123,7 @@ async function main() {
   async function getOrCreateCurrentPlaylistId(
     currentDate: Date
   ): Promise<string> {
-    let playlistId = await prisma.findPlaylistId(currentDate);
+    let playlistId = await prisma.findPlaylistIdByDate(currentDate);
 
     if (!playlistId) {
       playlistId = await youtube.createPlaylist(currentDate);

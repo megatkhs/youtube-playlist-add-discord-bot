@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Playlist {
-  id String @default(cuid()) @id
-  playlistId String
+  id          String @id @default(cuid())
+  playlistId  String
   targetMonth String
 }

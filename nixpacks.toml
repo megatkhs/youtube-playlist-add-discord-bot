@@ -1,2 +1,5 @@
 [phases.setup]
 nixPkgs = ['bun', 'nodejs']
+
+[start]
+cmd = "TZ=Asia/Tokyo bun run src/index.ts"
