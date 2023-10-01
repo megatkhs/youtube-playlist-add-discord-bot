@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import { dayjs } from "./dayjs";
 import { Events, createDiscordClient } from "./discord";
 import { createPrismaClient } from "./prisma";
 import { createYoutubeClient } from "./youtube";
@@ -18,10 +18,7 @@ discord.on(Events.MessageCreate, async (ctx) => {
 
   console.log("=========");
   console.log(ctx.content);
-  console.log(
-    "currentDate:",
-    dayjs(currentDate).format("YYYY-MM-DDTHH:mm:ssZ[Z]")
-  );
+  console.log("currentDate:", dayjs(currentDate).format());
 
   let url: URL;
 
@@ -70,10 +67,7 @@ discord.on(Events.MessageCreate, async (ctx) => {
 
 setMonthlySchedule(async (currentDate) => {
   console.log("=========");
-  console.log(
-    "月次バッチ実行中",
-    dayjs(currentDate).format("YYYY-MM-DDTHH:mm:ssZ[Z]")
-  );
+  console.log("月次バッチ実行中", dayjs(currentDate).format());
   let playlistId = await getOrCreateCurrentPlaylistId(currentDate);
 
   const channel = discord.client.channels.cache.get(
@@ -88,10 +82,7 @@ setMonthlySchedule(async (currentDate) => {
 });
 
 await discord.login();
-console.log(
-  "Botが正常に起動しました",
-  dayjs().format("YYYY-MM-DDTHH:mm:ssZ[Z]")
-);
+console.log("Botが正常に起動しました", dayjs().format());
 
 async function getOrCreateCurrentPlaylistId(
   currentDate: Date

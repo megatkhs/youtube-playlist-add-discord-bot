@@ -1,5 +1,5 @@
 import { google, youtube_v3 } from "googleapis";
-import dayjs from "dayjs";
+import { dayjs } from "./dayjs";
 
 export function createYoutubeClient() {
   const auth = new google.auth.OAuth2({

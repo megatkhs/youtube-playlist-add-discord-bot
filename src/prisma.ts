@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import dayjs from "dayjs";
+import { dayjs } from "./dayjs";
 
 export function createPrismaClient() {
   const client = new PrismaClient();
