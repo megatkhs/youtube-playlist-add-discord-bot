@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "prisma generate",
-    "start": "bun run src/index.ts"
+    "start": "TZ=Japan bun run src/index.ts"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.9",
