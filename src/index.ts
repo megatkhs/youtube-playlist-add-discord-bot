@@ -19,7 +19,10 @@ async function main() {
 
     console.log("=========");
     console.log(ctx.content);
-    console.log("currentDate:", dayjs(currentDate).format());
+    console.log(
+      "currentDate:",
+      dayjs(currentDate).format("YYYY/MM/DD HH:mm:ss")
+    );
 
     let url: URL;
 
@@ -68,7 +71,10 @@ async function main() {
 
   setMonthlySchedule(async (currentDate) => {
     console.log("=========");
-    console.log("月次バッチ実行中", dayjs(currentDate).format());
+    console.log(
+      "月次バッチ実行中",
+      dayjs(currentDate).format("YYYY/MM/DD HH:mm:ss")
+    );
     let playlistId = await getOrCreateCurrentPlaylistId(currentDate);
 
     const channel = discord.client.channels.cache.get(
@@ -83,7 +89,7 @@ async function main() {
   });
 
   await discord.login();
-  console.log("Botが正常に起動しました", dayjs().format());
+  console.log("Botが正常に起動しました", dayjs().format("YYYY/MM/DD HH:mm:ss"));
 
   async function getOrCreateCurrentPlaylistId(
     currentDate: Date
