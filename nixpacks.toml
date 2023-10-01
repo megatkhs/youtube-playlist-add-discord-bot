@@ -1,5 +1,2 @@
 [phases.setup]
 aptPkgs = ["nodejs", "npm"]
-
-[start]
-cmd = "bun run src/index.ts"
