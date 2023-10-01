@@ -1,0 +1,25 @@
+{
+  "name": "youtube-playlist-add-discord-bot",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "prisma generate",
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node-cron": "^3.0.9",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.3.1",
+    "dayjs": "^1.11.10",
+    "discord.js": "^14.13.0",
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^126.0.1",
+    "node-cron": "^3.0.2",
+    "prisma": "^5.3.1"
+  }
+}
