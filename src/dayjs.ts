@@ -4,10 +4,9 @@ import timezone from "dayjs/plugin/timezone";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault("Asia/Tokyo");
 
 function dayjsWithTimezone(date?: dayjs.ConfigType) {
-  return dayjs(date).tz();
+  return dayjs(date).tz("Asia/Tokyo");
 }
 
 export { dayjsWithTimezone as dayjs };
