@@ -3,8 +3,8 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build": "prisma generate",
-    "start": "bun run src/index.ts"
+    "build": "bunx prisma generate",
+    "start": "TZ=Asia/Tokyo bun run src/index.ts"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.9",
@@ -21,5 +21,8 @@
     "googleapis": "^126.0.1",
     "node-cron": "^3.0.2",
     "prisma": "^5.3.1"
+  },
+  "engines": {
+    "node": "18.18.0"
   }
 }
