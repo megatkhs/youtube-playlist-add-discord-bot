@@ -31,7 +31,7 @@ discord.on(Events.MessageCreate, async (ctx) => {
     return;
   }
 
-  if (!url.host.endsWith("youtube.com") || !url.host.endsWith("youtu.be")) {
+  if (!url.host.endsWith("youtube.com") && !url.host.endsWith("youtu.be")) {
     console.error("=> Error: YouTubeのURLではない");
     await ctx.react("😶‍🌫️");
     return;
