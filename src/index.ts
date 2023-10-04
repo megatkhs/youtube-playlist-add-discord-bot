@@ -31,13 +31,13 @@ discord.on(Events.MessageCreate, async (ctx) => {
     return;
   }
 
-  if (!url.host.endsWith("youtube.com")) {
+  if (!url.host.endsWith("youtube.com") || !url.host.endsWith("youtu.be")) {
     console.error("=> Error: YouTubeのURLではない");
     await ctx.react("😶‍🌫️");
     return;
   }
 
-  const videoId = url.searchParams.get("v");
+  const videoId = url.searchParams.get("v") || url.pathname.substring(1);
   if (!videoId) {
     console.error("=> Error: URLにVideoIDが存在しない");
     await ctx.react("😶‍🌫️");
