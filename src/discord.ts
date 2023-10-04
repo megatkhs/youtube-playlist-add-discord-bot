@@ -1,10 +1,4 @@
-import {
-  Awaitable,
-  Client,
-  ClientEvents,
-  GatewayIntentBits,
-  Message,
-} from "discord.js";
+import { Awaitable, Client, ClientEvents, GatewayIntentBits } from "discord.js";
 export { Events } from "discord.js";
 
 export function createDiscordClient() {

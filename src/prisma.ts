@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { PrismaClient } from "@prisma/client";
 import { dayjs } from "./dayjs";
 
