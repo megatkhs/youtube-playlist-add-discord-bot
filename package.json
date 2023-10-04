@@ -3,32 +3,23 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build": "prisma generate",
-    "start": "ts-node src/index.ts",
-    "dev": "dotenv -e .env.local -- ts-node src/index.ts"
+    "build": "bunx prisma generate",
+    "start": "bun run src/index.ts"
   },
   "devDependencies": {
-    "@types/node": "^20.8.2",
     "@types/node-cron": "^3.0.9",
-    "@typescript-eslint/eslint-plugin": "^6.7.4",
-    "@typescript-eslint/parser": "^6.7.4",
-    "dotenv-cli": "^7.3.0",
-    "eslint": "^8.50.0"
+    "bun-types": "latest"
   },
   "dependencies": {
     "@prisma/client": "^5.3.1",
     "dayjs": "^1.11.10",
     "discord.js": "^14.13.0",
-    "dotenv": "^16.3.1",
     "google-auth-library": "^9.1.0",
     "googleapis": "^126.0.1",
     "node-cron": "^3.0.2",
-    "prisma": "^5.3.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "prisma": "^5.3.1"
   },
   "engines": {
-    "node": "18.18.0",
-    "pnpm": "8.8.0"
+    "node": "18.18.0"
   }
 }

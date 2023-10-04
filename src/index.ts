@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { dayjs } from "./dayjs";
 import { Events, createDiscordClient } from "./discord";
 import { createPrismaClient } from "./prisma";
