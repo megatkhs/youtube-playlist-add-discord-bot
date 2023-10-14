@@ -1,8 +1,9 @@
 import { Events } from "discord.js";
 import { defineEvent } from "../discord/events";
 import dayjs from "dayjs";
-import { createYoutubeClient } from "../youtube";
+import { createYoutubeClient, getVideoId } from "../youtube";
 import { createPrismaClient } from "../prisma";
+import { ErrorWithReaction } from "../utils/error";
 
 export default defineEvent({
   name: Events.MessageCreate,
@@ -18,84 +19,67 @@ export default defineEvent({
       dayjs(currentDate).format("YYYY/MM/DD HH:mm:ss")
     );
 
-    let url: URL;
-
     try {
-      url = new URL(ctx.content);
-    } catch {
-      console.error("=> Error: URLではない");
-      await ctx.react("😶‍🌫️");
-      return;
-    }
+      const videoId = getVideoId(ctx.content);
+      const prisma = createPrismaClient();
+      const youtube = createYoutubeClient(prisma);
 
-    if (!url.host.endsWith("youtube.com") && !url.host.endsWith("youtu.be")) {
-      console.error("=> Error: YouTubeのURLではない");
-      await ctx.react("😶‍🌫️");
-      return;
-    }
+      console.log("videoId:", videoId);
 
-    const videoId = url.searchParams.get("v") || url.pathname.substring(1);
-    if (!videoId) {
-      console.error("=> Error: URLにVideoIDが存在しない");
-      await ctx.react("😶‍🌫️");
-      return;
-    }
-    const youtube = createYoutubeClient();
-    const prisma = createPrismaClient();
+      console.log("-----");
+      console.log("今月のプレイリスト");
+      const monthlyPlaylistId = await getOrCreateCurrentPlaylistId(
+        prisma,
+        youtube,
+        currentDate
+      );
+      console.log("playlistId:", monthlyPlaylistId);
 
-    console.log("videoId:", videoId);
+      if (
+        await youtube.checkVideoAlreadyExistsInPlaylist(
+          monthlyPlaylistId,
+          videoId
+        )
+      ) {
+        throw new ErrorWithReaction("🤔", "すでに存在している動画");
+      }
 
-    console.log("-----");
-    console.log("今月のプレイリスト");
-    const monthlyPlaylistId = await getOrCreateCurrentPlaylistId(
-      prisma,
-      youtube,
-      currentDate
-    );
-    console.log("playlistId:", monthlyPlaylistId);
-    if (
-      await youtube.checkVideoAlreadyExistsInPlaylist(
-        monthlyPlaylistId,
-        videoId
-      )
-    ) {
-      console.error("=> Error: すでに存在している動画");
-      await ctx.react("🤔");
-      return;
-    }
+      // プレイリストに追加する
+      try {
+        await youtube.insertVideoIntoPlaylist(monthlyPlaylistId, videoId);
+        console.log("=> 成功");
+        await ctx.react("🥳");
+      } catch {
+        throw new ErrorWithReaction("🚫", "何らかの理由で追加できなかった");
+      }
 
-    // プレイリストに追加する
-    try {
-      await youtube.insertVideoIntoPlaylist(monthlyPlaylistId, videoId);
-      console.log("=> 成功");
-      await ctx.react("🥳");
-    } catch {
-      console.error("=> Error: 何らかの理由で追加できなかった");
-      await ctx.react("🚫");
-      return;
-    }
+      console.log("-----");
+      console.log("全部入りプレイリスト");
+      const allInPlaylistId = await prisma.findAllInPlaylistId();
+      console.log("playlistId:", allInPlaylistId);
 
-    console.log("-----");
-    console.log("全部入りプレイリスト");
-    const allInPlaylistId = await prisma.findAllInPlaylistId();
-    console.log("playlistId:", allInPlaylistId);
-    if (
-      await youtube.checkVideoAlreadyExistsInPlaylist(allInPlaylistId, videoId)
-    ) {
-      console.error("=> Error: すでに存在している動画");
-      return;
-    }
+      if (
+        await youtube.checkVideoAlreadyExistsInPlaylist(
+          allInPlaylistId,
+          videoId
+        )
+      ) {
+        console.error("=> Error: すでに存在している動画");
+        return;
+      }
 
-    // プレイリストに追加する
-    try {
+      // プレイリストに追加する
       await youtube.insertVideoIntoPlaylist(allInPlaylistId, videoId);
       console.log("=> 成功");
-    } catch {
-      console.error("=> Error: 何らかの理由で追加できなかった");
-      return;
+    } catch (error) {
+      if (error instanceof ErrorWithReaction) {
+        await ctx.react(error.emoji);
+        console.error(`=> Error: ${error.message}`);
+      } else {
+        await ctx.react("🤯");
+        console.error("=> Error: 何らかの理由で追加できなかった");
+      }
     }
-
-    console.log("ここに何か");
   },
 });
 

@@ -11,13 +11,13 @@
     "bun-types": "latest"
   },
   "dependencies": {
-    "@prisma/client": "^5.3.1",
+    "@prisma/client": "^5.4.2",
     "dayjs": "^1.11.10",
     "discord.js": "^14.13.0",
     "google-auth-library": "^9.1.0",
     "googleapis": "^126.0.1",
     "node-cron": "^3.0.2",
-    "prisma": "^5.3.1"
+    "prisma": "^5.4.2"
   },
   "engines": {
     "node": "18.18.0"

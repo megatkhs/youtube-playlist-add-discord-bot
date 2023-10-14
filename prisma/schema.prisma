@@ -15,3 +15,9 @@ model Playlist {
   playlistId  String
   targetMonth String
 }
+
+model Auth {
+  id           String @id @default(cuid())
+  accessToken  String
+  refreshToken String
+}

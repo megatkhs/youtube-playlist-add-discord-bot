@@ -1,23 +1,56 @@
 import { google, youtube_v3 } from "googleapis";
 import { dayjs } from "./dayjs";
+import { ErrorWithReaction } from "./utils/error";
+import { PrismaClient } from "./prisma";
+import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
+import { GaxiosError } from "gaxios";
 
-export function createYoutubeClient() {
-  const auth = new google.auth.OAuth2({
-    clientId: process.env.YOUTUBE_API_CLIENT_ID,
-    clientSecret: process.env.YOUTUBE_API_CLIENT_SECRET,
-  });
-  auth.credentials = {
-    access_token: process.env.YOUTUBE_API_ACCESS_TOKEN,
-    refresh_token: process.env.YOUTUBE_API_REFRESH_TOKEN,
-    scope: process.env.YOUTUBE_API_SCOPE,
-    token_type: process.env.YOUTUBE_API_TOKEN_TYPE,
-    expiry_date: Number(process.env.YOUTUBE_API_EXPIRY_DATE),
+/** URLからvideoIdを取得する */
+export function getVideoId(message: string) {
+  let url: URL;
+
+  try {
+    url = new URL(message);
+  } catch {
+    throw new ErrorWithReaction("😶‍🌫️", "URLではない");
+  }
+
+  if (!url.host.endsWith("youtube.com") && !url.host.endsWith("youtu.be")) {
+    throw new ErrorWithReaction("😶‍🌫️", "YouTubeのURLではない");
+  }
+
+  const videoId = url.searchParams.get("v") || url.pathname.substring(1);
+  if (!videoId) {
+    throw new ErrorWithReaction("😶‍🌫️", "URLにVideoIDが存在しない");
+  }
+
+  return videoId;
+}
+
+export function createYoutubeClient(prisma: PrismaClient) {
+  let _client: youtube_v3.Youtube | undefined;
+
+  const getClient = async () => {
+    if (!_client) {
+      const tokens = await prisma.findAuthToken();
+      const auth = new google.auth.OAuth2({
+        clientId: process.env.YOUTUBE_API_CLIENT_ID,
+        clientSecret: process.env.YOUTUBE_API_CLIENT_SECRET,
+      });
+      auth.setCredentials({
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+      });
+
+      _client = new youtube_v3.Youtube({ auth });
+    }
+
+    return _client;
   };
-
-  const client = new youtube_v3.Youtube({ auth });
 
   /** Youtube上にプレイリストを作成する */
   const createPlaylist = async (date: Date): Promise<string> => {
+    const client = await getClient();
     const result = await client.playlists.insert({
       part: ["snippet", "status"],
       requestBody: {
@@ -38,6 +71,7 @@ export function createYoutubeClient() {
     playlistId: string,
     videoId: string
   ): Promise<boolean> => {
+    const client = await getClient();
     const result = await client.playlistItems.list({
       part: [],
       playlistId,
@@ -52,6 +86,7 @@ export function createYoutubeClient() {
     playlistId: string,
     videoId: string
   ): Promise<void> => {
+    const client = await getClient();
     await client.playlistItems.insert({
       part: ["snippet"],
       requestBody: {
@@ -71,6 +106,5 @@ export function createYoutubeClient() {
     createPlaylist,
     checkVideoAlreadyExistsInPlaylist,
     insertVideoIntoPlaylist,
-    client,
   };
 }
