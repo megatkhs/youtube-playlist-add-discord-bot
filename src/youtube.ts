@@ -2,8 +2,6 @@ import { google, youtube_v3 } from "googleapis";
 import { dayjs } from "./dayjs";
 import { ErrorWithReaction } from "./utils/error";
 import { PrismaClient } from "./prisma";
-import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
-import { GaxiosError } from "gaxios";
 
 /** URLからvideoIdを取得する */
 export function getVideoId(message: string) {
@@ -36,6 +34,7 @@ export function createYoutubeClient(prisma: PrismaClient) {
       const auth = new google.auth.OAuth2({
         clientId: process.env.YOUTUBE_API_CLIENT_ID,
         clientSecret: process.env.YOUTUBE_API_CLIENT_SECRET,
+        redirectUri: "http://localhost",
       });
       auth.setCredentials({
         access_token: tokens.accessToken,

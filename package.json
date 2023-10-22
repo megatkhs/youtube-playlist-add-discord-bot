@@ -16,6 +16,7 @@
     "discord.js": "^14.13.0",
     "google-auth-library": "^9.1.0",
     "googleapis": "^126.0.1",
+    "hono": "^3.8.2",
     "node-cron": "^3.0.2",
     "prisma": "^5.4.2"
   },
