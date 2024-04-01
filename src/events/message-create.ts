@@ -28,16 +28,16 @@ export default defineEvent({
 
       console.log("-----");
       console.log("今月のプレイリスト");
-      const monthlyPlaylistId = await getOrCreateCurrentPlaylistId(
+      const monthlyPlaylist = await getOrCreateCurrentPlaylistId(
         prisma,
         youtube,
         currentDate
       );
-      console.log("playlistId:", monthlyPlaylistId);
+      console.log("playlistId:", monthlyPlaylist.id);
 
       if (
         await youtube.checkVideoAlreadyExistsInPlaylist(
-          monthlyPlaylistId,
+          monthlyPlaylist.id,
           videoId
         )
       ) {
@@ -46,7 +46,7 @@ export default defineEvent({
 
       // プレイリストに追加する
       try {
-        await youtube.insertVideoIntoPlaylist(monthlyPlaylistId, videoId);
+        await youtube.insertVideoIntoPlaylist(monthlyPlaylist.id, videoId);
         console.log("=> 成功");
         await ctx.react("🥳");
       } catch {
@@ -70,6 +70,15 @@ export default defineEvent({
 
       // プレイリストに追加する
       await youtube.insertVideoIntoPlaylist(allInPlaylistId, videoId);
+
+      if (monthlyPlaylist.created) {
+        const url = new URL(Bun.env.REVALIDATE_URL!);
+        url.searchParams.set("secret", Bun.env.REVALIDATE_SECRET!);
+        url.searchParams.set("tag", "playlists");
+
+        await fetch(url);
+      }
+
       console.log("=> 成功");
     } catch (error) {
       if (error instanceof ErrorWithReaction) {
@@ -87,15 +96,17 @@ async function getOrCreateCurrentPlaylistId(
   prisma: ReturnType<typeof createPrismaClient>,
   youtube: ReturnType<typeof createYoutubeClient>,
   currentDate: Date
-): Promise<string> {
+): Promise<{ id: string; created: boolean }> {
   let playlistId = await prisma.findPlaylistIdByDate(currentDate);
+  let created = false;
 
   if (!playlistId) {
     playlistId = await youtube.createPlaylist(currentDate);
+    created = true;
     prisma.savePlaylistId(playlistId, currentDate);
 
     console.log("=> プレイリストを作成:", playlistId);
   }
 
-  return playlistId;
+  return { id: playlistId, created };
 }
