@@ -31,10 +31,12 @@ export function startHonoApp() {
       prisma.saveAuthToken(tokens.access_token!, tokens.refresh_token!);
       prisma.disconnect();
 
-      return c.body(
-        `トークンを更新しました。 有効期限${dayjs(tokens.expiry_date).format(
-          "YYYY/MM/DD HH:mm:ss"
-        )}`
+      return c.json(
+        {
+          success: true,
+          tokens,
+        },
+        200
       );
     } catch (e) {
       return c.text(String(e));
