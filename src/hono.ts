@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { google } from "googleapis";
-import dayjs from "dayjs";
-import { createPrismaClient } from "./prisma";
+import { client } from "./microcms";
 
 const SCOPES = ["https://www.googleapis.com/auth/youtube"];
 const OAuth2 = google.auth.OAuth2;
@@ -27,9 +26,13 @@ export function startHonoApp() {
 
     try {
       const { tokens } = await oauth2Client.getToken(code);
-      const prisma = createPrismaClient();
-      prisma.saveAuthToken(tokens.access_token!, tokens.refresh_token!);
-      prisma.disconnect();
+      client.update({
+        endpoint: "credential",
+        content: {
+          accessToken: tokens.access_token!,
+          refreshToken: tokens.refresh_token!,
+        },
+      });
 
       return c.json(
         {

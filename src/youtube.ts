@@ -1,7 +1,8 @@
 import { google, youtube_v3 } from "googleapis";
 import { dayjs } from "./dayjs";
 import { ErrorWithReaction } from "./utils/error";
-import { PrismaClient } from "./prisma";
+import { createClient } from "microcms-ts-sdk";
+import { Endpoints } from "./types/microcms";
 
 /** URLからvideoIdを取得する */
 export function getVideoId(message: string) {
@@ -25,12 +26,16 @@ export function getVideoId(message: string) {
   return videoId;
 }
 
-export function createYoutubeClient(prisma: PrismaClient) {
+export function createYoutubeClient(
+  microcms: ReturnType<typeof createClient<Endpoints>>
+) {
   let _client: youtube_v3.Youtube | undefined;
 
   const getClient = async () => {
     if (!_client) {
-      const tokens = await prisma.findAuthToken();
+      const tokens = await microcms.getObject({
+        endpoint: "credential",
+      });
       const auth = new google.auth.OAuth2({
         clientId: process.env.YOUTUBE_API_CLIENT_ID,
         clientSecret: process.env.YOUTUBE_API_CLIENT_SECRET,

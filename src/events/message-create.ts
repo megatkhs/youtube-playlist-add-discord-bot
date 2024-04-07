@@ -2,8 +2,10 @@ import { Events } from "discord.js";
 import { defineEvent } from "../discord/events";
 import dayjs from "dayjs";
 import { createYoutubeClient, getVideoId } from "../youtube";
-import { createPrismaClient } from "../prisma";
 import { ErrorWithReaction } from "../utils/error";
+import { createClient } from "microcms-ts-sdk";
+import { Endpoints } from "../types/microcms";
+import { client } from "../microcms";
 
 export default defineEvent({
   name: Events.MessageCreate,
@@ -21,15 +23,14 @@ export default defineEvent({
 
     try {
       const videoId = getVideoId(ctx.content);
-      const prisma = createPrismaClient();
-      const youtube = createYoutubeClient(prisma);
+      const youtube = createYoutubeClient(client);
 
       console.log("videoId:", videoId);
 
       console.log("-----");
       console.log("今月のプレイリスト");
       const monthlyPlaylist = await getOrCreateCurrentPlaylistId(
-        prisma,
+        client,
         youtube,
         currentDate
       );
@@ -55,8 +56,15 @@ export default defineEvent({
 
       console.log("-----");
       console.log("全部入りプレイリスト");
-      const allInPlaylistId = await prisma.findAllInPlaylistId();
-      console.log("playlistId:", allInPlaylistId);
+      const {
+        contents: [{ playlistId: allInPlaylistId }],
+      } = await client.getList({
+        endpoint: "playlist",
+        queries: {
+          fields: ["playlistId"],
+          filters: "targetMonth[equals]ALLIN",
+        },
+      });
 
       if (
         await youtube.checkVideoAlreadyExistsInPlaylist(
@@ -87,23 +95,38 @@ export default defineEvent({
       } else {
         await ctx.react("🤯");
         console.error("=> Error: 何らかの理由で追加できなかった");
+        console.log(error);
       }
     }
   },
 });
 
 async function getOrCreateCurrentPlaylistId(
-  prisma: ReturnType<typeof createPrismaClient>,
+  microcms: ReturnType<typeof createClient<Endpoints>>,
   youtube: ReturnType<typeof createYoutubeClient>,
   currentDate: Date
 ): Promise<{ id: string; created: boolean }> {
-  let playlistId = await prisma.findPlaylistIdByDate(currentDate);
+  let { contents } = await microcms.getList({
+    endpoint: "playlist",
+    queries: {
+      fields: ["playlistId"],
+      filters: `targetMonth[equals]${dayjs(currentDate).format("YYYY-MM-01")}`,
+    },
+  });
+
+  let playlistId = contents[0]?.playlistId;
   let created = false;
 
   if (!playlistId) {
     playlistId = await youtube.createPlaylist(currentDate);
     created = true;
-    prisma.savePlaylistId(playlistId, currentDate);
+    await microcms.create({
+      endpoint: "playlist",
+      content: {
+        playlistId,
+        targetMonth: dayjs(currentDate).format("YYYY-MM-01"),
+      },
+    });
 
     console.log("=> プレイリストを作成:", playlistId);
   }

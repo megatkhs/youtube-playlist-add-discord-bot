@@ -3,7 +3,6 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build": "bunx prisma generate",
     "start": "bun run src/index.ts"
   },
   "devDependencies": {
@@ -11,14 +10,13 @@
     "bun-types": "latest"
   },
   "dependencies": {
-    "@prisma/client": "^5.11.0",
     "dayjs": "^1.11.10",
     "discord.js": "^14.14.1",
     "google-auth-library": "^9.7.0",
     "googleapis": "^126.0.1",
     "hono": "^3.12.12",
-    "node-cron": "^3.0.3",
-    "prisma": "^5.11.0"
+    "microcms-ts-sdk": "^1.1.0",
+    "node-cron": "^3.0.3"
   },
   "engines": {
     "node": "18.18.0"
