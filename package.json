@@ -7,7 +7,8 @@
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "prisma": "5.16.2"
   },
   "dependencies": {
     "dayjs": "^1.11.10",
