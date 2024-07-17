@@ -3,17 +3,17 @@ import { Client } from "discord.js";
 import { attachEvents } from "./events";
 
 export function startDiscordBot() {
-	console.log("Bot起動中...");
+  console.log("Bot起動中...");
 
-	const client = new Client({
-		intents: [
-			GatewayIntentBits.Guilds,
-			GatewayIntentBits.GuildMessages,
-			GatewayIntentBits.MessageContent,
-		],
-	});
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+    ],
+  });
 
-	attachEvents(client);
+  attachEvents(client);
 
-	client.login();
+  client.login();
 }
