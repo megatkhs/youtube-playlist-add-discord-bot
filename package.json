@@ -7,6 +7,7 @@
     "dev": "bun --watch run src/index.ts"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.8.3",
     "@types/node-cron": "^3.0.11",
     "bun-types": "latest",
     "prisma": "5.16.2"
