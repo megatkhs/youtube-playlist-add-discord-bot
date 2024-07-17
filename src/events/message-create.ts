@@ -84,7 +84,7 @@ export default defineEvent({
         url.searchParams.set("secret", Bun.env.REVALIDATE_SECRET!);
         url.searchParams.set("tag", "playlists");
 
-        await fetch(url);
+        await fetch(url.toString());
       }
 
       console.log("=> 成功");

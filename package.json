@@ -3,7 +3,8 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "dev": "bun --watch run src/index.ts"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
