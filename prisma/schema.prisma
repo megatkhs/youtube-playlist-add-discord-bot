@@ -12,3 +12,35 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// Discordのサーバー情報に紐づくテーブル
+model Guild {
+  id         String    @id @default(cuid())
+  originalId String
+  channels   Channel[]
+}
+
+model Channel {
+  id         String   @id @default(cuid())
+  originalId String
+  guild      Guild    @relation(fields: [guildId], references: [id])
+  guildId    String   @unique
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+  playlistId String   @unique
+}
+
+model Playlist {
+  id             String   @id @default(cuid())
+  channel        Channel?
+  confidentialId String
+}
+
+model Confidential {
+  id            String @id @default(cuid())
+  refresh_token String
+  expiry_date   String
+  access_token  String
+  token_type    String
+  id_token      String
+  scope         String
+}
