@@ -1,8 +1,8 @@
 export class ErrorWithReaction extends Error {
-  public emoji: string;
+	public emoji: string;
 
-  constructor(emoji: string, message: string) {
-    super(message);
-    this.emoji = emoji;
-  }
+	constructor(emoji: string, message: string) {
+		super(message);
+		this.emoji = emoji;
+	}
 }
