@@ -1,11 +1,11 @@
-import { Events } from "discord.js";
-import { defineEvent } from "../discord/events";
 import dayjs from "dayjs";
-import { createYoutubeClient, getVideoId } from "../youtube";
-import { ErrorWithReaction } from "../utils/error";
-import { createClient } from "microcms-ts-sdk";
-import { Endpoints } from "../types/microcms";
+import { Events } from "discord.js";
+import type { createClient } from "microcms-ts-sdk";
+import { defineEvent } from "../discord/events";
 import { client } from "../microcms";
+import type { Endpoints } from "../types/microcms";
+import { ErrorWithReaction } from "../utils/error";
+import { createYoutubeClient, getVideoId } from "../youtube";
 
 export default defineEvent({
   name: Events.MessageCreate,
@@ -106,7 +106,7 @@ async function getOrCreateCurrentPlaylistId(
   youtube: ReturnType<typeof createYoutubeClient>,
   currentDate: Date,
 ): Promise<{ id: string; created: boolean }> {
-  let { contents } = await microcms.getList({
+  const { contents } = await microcms.getList({
     endpoint: "playlist",
     queries: {
       fields: ["playlistId"],

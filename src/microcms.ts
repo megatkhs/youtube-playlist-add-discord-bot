@@ -1,5 +1,5 @@
 import { createClient } from "microcms-ts-sdk";
-import { Endpoints } from "./types/microcms";
+import type { Endpoints } from "./types/microcms";
 
 export const client = createClient<Endpoints>({
   serviceDomain: Bun.env.MICROCMS_SERVICE_DOMAIN!,

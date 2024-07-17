@@ -1,8 +1,8 @@
 import { google, youtube_v3 } from "googleapis";
+import type { createClient } from "microcms-ts-sdk";
 import { dayjs } from "./dayjs";
+import type { Endpoints } from "./types/microcms";
 import { ErrorWithReaction } from "./utils/error";
-import { createClient } from "microcms-ts-sdk";
-import { Endpoints } from "./types/microcms";
 
 /** URLからvideoIdを取得する */
 export function getVideoId(message: string) {
