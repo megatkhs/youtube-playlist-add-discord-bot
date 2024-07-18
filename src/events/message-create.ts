@@ -1,5 +1,4 @@
 import { prisma } from '@/libs/prisma'
-import { PlaylistType } from '@prisma/client'
 import dayjs from 'dayjs'
 import { Events } from 'discord.js'
 import type { createClient } from 'microcms-ts-sdk'
@@ -22,7 +21,7 @@ export default defineEvent({
       },
     })
 
-    console.log(channel)
+    // チャンネルの存在チェック
     if (channel === null) return
 
     const currentDate = new Date()
