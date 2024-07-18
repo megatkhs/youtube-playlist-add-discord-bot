@@ -5,9 +5,10 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch run src/index.ts",
-    "format": "biome format --write ./src",
     "lint": "biome lint ./src",
-    "fix": "biome check --write ./src"
+    "format": "biome format --write ./src",
+    "fix": "biome lint --apply ./src",
+    "check": "biome check --apply ./src"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
