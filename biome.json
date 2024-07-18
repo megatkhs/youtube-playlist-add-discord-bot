@@ -1,5 +1,19 @@
 {
-  "formatter": {
-    "indentStyle": "space"
+  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "javascript": {
+    "formatter": {
+      "indentStyle": "space",
+      "quoteStyle": "single",
+      "semicolons": "asNeeded"
+    }
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
   }
 }
