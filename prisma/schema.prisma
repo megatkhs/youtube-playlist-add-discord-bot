@@ -13,34 +13,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Discordのサーバー情報に紐づくテーブル
+/// Discord サーバー
 model Guild {
-  id         String    @id @default(cuid())
-  originalId String
-  channels   Channel[]
+  id         String @id @default(cuid())
+  originalId String @unique
+
+  channels Channel[]
 }
 
+/// Discord チャンネル
 model Channel {
-  id         String   @id @default(cuid())
-  originalId String
-  guild      Guild    @relation(fields: [guildId], references: [id])
-  guildId    String   @unique
-  playlist   Playlist @relation(fields: [playlistId], references: [id])
-  playlistId String   @unique
+  id         String @id @default(cuid())
+  originalId String @unique
+  guildId    String
+
+  // 設定など
+  /// 月刊プレイリストを作成するか
+  makeMonthlyPlaylist Boolean @default(false)
+  /// ボットが起動した時の通知設定
+  wakeUpNotification  Boolean @default(false)
+
+  guild     Guild      @relation(fields: [guildId], references: [id])
+  playlists Playlist[]
 }
 
+/// YoutubePlaylist
 model Playlist {
-  id             String   @id @default(cuid())
-  channel        Channel?
-  confidentialId String
+  id                       String       @id @default(cuid())
+  originalId               String       @unique
+  type                     PlaylistType @default(Defalut)
+  targetMonth              DateTime?
+  channelId                String
+  youtubeApiConfidentialId String
+
+  channel                Channel                @relation(fields: [channelId], references: [id])
+  youtubeApiConfidential YoutubeApiConfidential @relation(fields: [youtubeApiConfidentialId], references: [id])
 }
 
-model Confidential {
-  id            String @id @default(cuid())
-  refresh_token String
-  expiry_date   String
-  access_token  String
-  token_type    String
-  id_token      String
-  scope         String
+enum PlaylistType {
+  Defalut
+  Monthly
+}
+
+model YoutubeApiConfidential {
+  id           String   @id @default(cuid())
+  access_token String   @unique
+  scope        String
+  token_type   String
+  expiry_date  DateTime
+
+  playlists Playlist[]
 }

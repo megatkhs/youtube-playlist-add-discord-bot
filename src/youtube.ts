@@ -1,114 +1,114 @@
-import { google, youtube_v3 } from "googleapis";
-import type { createClient } from "microcms-ts-sdk";
-import { dayjs } from "./dayjs";
-import type { Endpoints } from "./types/microcms";
-import { ErrorWithReaction } from "./utils/error";
+import { google, youtube_v3 } from 'googleapis'
+import type { createClient } from 'microcms-ts-sdk'
+import { dayjs } from './dayjs'
+import type { Endpoints } from './types/microcms'
+import { ErrorWithReaction } from './utils/error'
 
 /** URLからvideoIdを取得する */
 export function getVideoId(message: string) {
-  let url: URL;
+  let url: URL
 
   try {
-    url = new URL(message);
+    url = new URL(message)
   } catch {
-    throw new ErrorWithReaction("😶‍🌫️", "URLではない");
+    throw new ErrorWithReaction('😶‍🌫️', 'URLではない')
   }
 
-  if (!url.host.endsWith("youtube.com") && !url.host.endsWith("youtu.be")) {
-    throw new ErrorWithReaction("😶‍🌫️", "YouTubeのURLではない");
+  if (!url.host.endsWith('youtube.com') && !url.host.endsWith('youtu.be')) {
+    throw new ErrorWithReaction('😶‍🌫️', 'YouTubeのURLではない')
   }
 
-  const videoId = url.searchParams.get("v") || url.pathname.substring(1);
+  const videoId = url.searchParams.get('v') || url.pathname.substring(1)
   if (!videoId) {
-    throw new ErrorWithReaction("😶‍🌫️", "URLにVideoIDが存在しない");
+    throw new ErrorWithReaction('😶‍🌫️', 'URLにVideoIDが存在しない')
   }
 
-  return videoId;
+  return videoId
 }
 
 export function createYoutubeClient(
   microcms: ReturnType<typeof createClient<Endpoints>>,
 ) {
-  let _client: youtube_v3.Youtube | undefined;
+  let _client: youtube_v3.Youtube | undefined
 
   const getClient = async () => {
     if (!_client) {
       const tokens = await microcms.getObject({
-        endpoint: "credential",
-      });
+        endpoint: 'credential',
+      })
       const auth = new google.auth.OAuth2({
         clientId: process.env.YOUTUBE_API_CLIENT_ID,
         clientSecret: process.env.YOUTUBE_API_CLIENT_SECRET,
-        redirectUri: "http://localhost",
-      });
+        redirectUri: 'http://localhost',
+      })
       auth.setCredentials({
         access_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,
-      });
+      })
 
-      _client = new youtube_v3.Youtube({ auth });
+      _client = new youtube_v3.Youtube({ auth })
     }
 
-    return _client;
-  };
+    return _client
+  }
 
   /** Youtube上にプレイリストを作成する */
   const createPlaylist = async (date: Date): Promise<string> => {
-    const client = await getClient();
+    const client = await getClient()
     const result = await client.playlists.insert({
-      part: ["snippet", "status"],
+      part: ['snippet', 'status'],
       requestBody: {
         snippet: {
-          title: `本日のおすすめ曲まとめ ${dayjs(date).format("YYYY.MM")}`,
+          title: `本日のおすすめ曲まとめ ${dayjs(date).format('YYYY.MM')}`,
         },
         status: {
-          privacyStatus: "public",
+          privacyStatus: 'public',
         },
       },
-    });
+    })
 
-    return result.data.id!;
-  };
+    return result.data.id!
+  }
 
   /** 動画Idがすでにプレイリストに保存されているか確認する */
   const checkVideoAlreadyExistsInPlaylist = async (
     playlistId: string,
     videoId: string,
   ): Promise<boolean> => {
-    const client = await getClient();
+    const client = await getClient()
     const result = await client.playlistItems.list({
       part: [],
       playlistId,
       videoId,
-    });
+    })
 
-    return result.data.items!.length > 0;
-  };
+    return result.data.items!.length > 0
+  }
 
   /** 動画をプレイリストに追加する */
   const insertVideoIntoPlaylist = async (
     playlistId: string,
     videoId: string,
   ): Promise<void> => {
-    const client = await getClient();
+    const client = await getClient()
     await client.playlistItems.insert({
-      part: ["snippet"],
+      part: ['snippet'],
       requestBody: {
         snippet: {
           playlistId,
           position: 0,
           resourceId: {
             videoId,
-            kind: "youtube#video",
+            kind: 'youtube#video',
           },
         },
       },
-    });
-  };
+    })
+  }
 
   return {
     createPlaylist,
     checkVideoAlreadyExistsInPlaylist,
     insertVideoIntoPlaylist,
-  };
+  }
 }

@@ -1,6 +1,3 @@
-import { startDiscordBot } from "./discord/client";
-import { startHonoApp } from "./hono";
+import { startDiscordBot } from '@/discord/client'
 
-startDiscordBot();
-
-export default startHonoApp();
+startDiscordBot()
