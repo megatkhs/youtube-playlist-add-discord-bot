@@ -23,9 +23,10 @@ model Guild {
 
 /// Discord チャンネル
 model Channel {
-  id         String @id @default(cuid())
-  originalId String @unique
+  id         String  @id @default(cuid())
+  originalId String  @unique
   guildId    String
+  active     Boolean @default(true)
 
   // 設定など
   /// 月刊プレイリストを作成するか
