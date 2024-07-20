@@ -15,8 +15,9 @@ datasource db {
 
 /// Discord サーバー
 model Guild {
-  id         String @id @default(cuid())
-  originalId String @unique
+  id         String    @id @default(cuid())
+  originalId String    @unique
+  exitAt     DateTime?
 
   channels Channel[]
 }
