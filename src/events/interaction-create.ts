@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { defineEvent } from '@/discord/events'
+import { reply } from '@/utils/discord/helper/reply'
 import {
   Collection,
   Events,
@@ -40,17 +41,10 @@ export default defineEvent({
       await command.execute(interaction)
     } catch (error) {
       console.error(error)
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: '⛔コマンド実行中にエラーが発生しました',
-          ephemeral: true,
-        })
-      } else {
-        await interaction.reply({
-          content: '⛔コマンド実行中にエラーが発生しました',
-          ephemeral: true,
-        })
-      }
+      await reply(interaction, {
+        content: '⛔コマンド実行中にエラーが発生しました',
+        ephemeral: true,
+      })
     }
   },
 })
