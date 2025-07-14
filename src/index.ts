@@ -1,5 +1,5 @@
 import { startDiscordBot } from "./discord/client";
-import { startHonoApp } from "./hono";
+import { startHonoApp } from "./routes/hono";
 
 startDiscordBot();
 

@@ -1,11 +1,11 @@
 import { Events } from "discord.js";
 import { defineEvent } from "../discord/events";
-import dayjs from "dayjs";
-import { createYoutubeClient, getVideoId } from "../youtube";
+import dayjs from "../lib/dayjs";
+import { createYoutubeClient, getVideoId } from "../lib/youtube";
 import { ErrorWithReaction } from "../utils/error";
 import { createClient } from "microcms-ts-sdk";
 import { Endpoints } from "../types/microcms";
-import { client } from "../microcms";
+import { client } from "../lib/microcms";
 
 export default defineEvent({
   name: Events.MessageCreate,

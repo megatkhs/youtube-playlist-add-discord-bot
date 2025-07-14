@@ -1,31 +1,24 @@
 import { Hono } from "hono";
-import { google } from "googleapis";
-import { client } from "./microcms";
-
-const SCOPES = ["https://www.googleapis.com/auth/youtube"];
-const OAuth2 = google.auth.OAuth2;
+import { client } from "../lib/microcms";
+import {
+  createOAuth2Client,
+  generateAuthUrl,
+  getTokens,
+} from "../lib/youtube";
 
 export function startHonoApp() {
   const app = new Hono();
-  const oauth2Client = new OAuth2(
-    Bun.env.YOUTUBE_API_CLIENT_ID,
-    Bun.env.YOUTUBE_API_CLIENT_SECRET,
-    Bun.env.YOUTUBE_API_REDIRECT_URL
-  );
+  const oauth2Client = createOAuth2Client();
 
   app.get("/", async (c) => {
     const code = c.req.query("code");
     if (!code) {
-      var authUrl = oauth2Client.generateAuthUrl({
-        access_type: "offline",
-        scope: SCOPES,
-      });
-
+      const authUrl = generateAuthUrl(oauth2Client);
       return c.redirect(authUrl);
     }
 
     try {
-      const { tokens } = await oauth2Client.getToken(code);
+      const tokens = await getTokens(oauth2Client, code);
       client.update({
         endpoint: "credential",
         content: {

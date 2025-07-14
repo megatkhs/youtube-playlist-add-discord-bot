@@ -1,8 +1,30 @@
 import { google, youtube_v3 } from "googleapis";
 import { dayjs } from "./dayjs";
-import { ErrorWithReaction } from "./utils/error";
+import { ErrorWithReaction } from "../utils/error";
 import { createClient } from "microcms-ts-sdk";
-import { Endpoints } from "./types/microcms";
+import { Endpoints } from "../types/microcms";
+
+const SCOPES = ["https://www.googleapis.com/auth/youtube"];
+
+export function createOAuth2Client() {
+  return new google.auth.OAuth2(
+    Bun.env.YOUTUBE_API_CLIENT_ID,
+    Bun.env.YOUTUBE_API_CLIENT_SECRET,
+    Bun.env.YOUTUBE_API_REDIRECT_URL
+  );
+}
+
+export function generateAuthUrl(oauth2Client: ReturnType<typeof createOAuth2Client>) {
+  return oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: SCOPES,
+  });
+}
+
+export async function getTokens(oauth2Client: ReturnType<typeof createOAuth2Client>, code: string) {
+  const { tokens } = await oauth2Client.getToken(code);
+  return tokens;
+}
 
 /** URLからvideoIdを取得する */
 export function getVideoId(message: string) {
