@@ -9,17 +9,21 @@ interface Env {
   YOUTUBE_CLIENT_SECRET: string;
 }
 
+/** credentialId ごとのリフレッシュ処理を保持するキャッシュ */
+const refreshPromises = new Map<number, Promise<string>>();
+
 /**
  * 認証付きでYouTube APIにリクエストを送信する。
  * 401の場合はトークンをリフレッシュしてリトライする。
  */
 async function fetchWithAuth(
   db: DrizzleD1Database<typeof schema>,
+  credentialId: number,
   env: Env,
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const { accessToken, refreshToken } = await getAccessToken(db);
+  const { accessToken, refreshToken } = await getAccessToken(db, credentialId);
 
   const doFetch = (token: string) =>
     fetch(url, {
@@ -35,12 +39,22 @@ async function fetchWithAuth(
 
   if (response.status === 401) {
     // トークンが切れているのでリフレッシュしてリトライ
-    const newToken = await refreshAccessToken(
-      db,
-      refreshToken,
-      env.YOUTUBE_CLIENT_ID,
-      env.YOUTUBE_CLIENT_SECRET
-    );
+    // 同一の credentialId に対して並列でリフレッシュが走らないように Promise をキャッシュする
+    let p = refreshPromises.get(credentialId);
+    if (!p) {
+      p = refreshAccessToken(
+        db,
+        credentialId,
+        refreshToken,
+        env.YOUTUBE_CLIENT_ID,
+        env.YOUTUBE_CLIENT_SECRET
+      ).finally(() => {
+        refreshPromises.delete(credentialId);
+      });
+      refreshPromises.set(credentialId, p);
+    }
+
+    const newToken = await p;
     return doFetch(newToken);
   }
 
@@ -67,11 +81,13 @@ export function getVideoId(message: string): string | null {
 /** YouTube上にプレイリストを作成する */
 export async function createPlaylist(
   db: DrizzleD1Database<typeof schema>,
+  credentialId: number,
   env: Env,
   title: string
 ): Promise<string> {
   const response = await fetchWithAuth(
     db,
+    credentialId,
     env,
     `${YOUTUBE_API_BASE}/playlists?part=snippet,status`,
     {
@@ -95,6 +111,7 @@ export async function createPlaylist(
 /** 動画がすでにプレイリストに存在するか確認する */
 export async function checkVideoExistsInPlaylist(
   db: DrizzleD1Database<typeof schema>,
+  credentialId: number,
   env: Env,
   playlistId: string,
   videoId: string
@@ -107,6 +124,7 @@ export async function checkVideoExistsInPlaylist(
 
   const response = await fetchWithAuth(
     db,
+    credentialId,
     env,
     `${YOUTUBE_API_BASE}/playlistItems?${params.toString()}`
   );
@@ -123,12 +141,14 @@ export async function checkVideoExistsInPlaylist(
 /** 動画をプレイリストに追加する */
 export async function insertVideoIntoPlaylist(
   db: DrizzleD1Database<typeof schema>,
+  credentialId: number,
   env: Env,
   playlistId: string,
   videoId: string
 ): Promise<void> {
   const response = await fetchWithAuth(
     db,
+    credentialId,
     env,
     `${YOUTUBE_API_BASE}/playlistItems?part=snippet`,
     {

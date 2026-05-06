@@ -42,6 +42,18 @@ playlistApp.post("/add", async (c) => {
       channel = tmp;
     }
 
+    if (!channel.credentialId) {
+      return c.json(
+        { 
+          success: false, 
+          error: "CREDENTIAL_NOT_FOUND", 
+          message: "YouTube account not linked. Please authenticate via /auth?channelId=" + channelId 
+        }, 
+        401
+      );
+    }
+
+    const credentialId = channel.credentialId;
     const targetPlaylistIds: string[] = [];
 
     // 2. 静的なプレイリストの取得
@@ -71,7 +83,7 @@ playlistApp.post("/add", async (c) => {
       if (!monthlyPlaylist) {
         // 今月のプレイリストが存在しない場合は作成
         const title = `本日のおすすめ曲まとめ ${currentMonth.replace("-", ".")}`;
-        const newPlaylistId = await createPlaylist(db, c.env, title);
+        const newPlaylistId = await createPlaylist(db, credentialId, c.env, title);
 
         await db.insert(channelMonthlyPlaylists).values({
           discordChannelId: channelId,
@@ -97,11 +109,11 @@ playlistApp.post("/add", async (c) => {
 
     const results = await Promise.allSettled(
       targetPlaylistIds.map(async (playlistId) => {
-        const exists = await checkVideoExistsInPlaylist(db, c.env, playlistId, videoId);
+        const exists = await checkVideoExistsInPlaylist(db, credentialId, c.env, playlistId, videoId);
         if (exists) {
           throw new Error("ALREADY_EXISTS");
         }
-        await insertVideoIntoPlaylist(db, c.env, playlistId, videoId);
+        await insertVideoIntoPlaylist(db, credentialId, c.env, playlistId, videoId);
       })
     );
 

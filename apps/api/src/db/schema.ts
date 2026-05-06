@@ -10,6 +10,7 @@ export const credentials = sqliteTable("credentials", {
 /** Discordチャンネル設定 */
 export const channels = sqliteTable("channels", {
   discordChannelId: text("discord_channel_id").primaryKey(),
+  credentialId: integer("credential_id").references(() => credentials.id),
   createMonthlyPlaylist: integer("create_monthly_playlist", {
     mode: "boolean",
   })

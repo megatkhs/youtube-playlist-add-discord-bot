@@ -8,6 +8,12 @@
       "custom_domain": true
     }
   ],
+  "kv_namespaces": [
+    {
+      "binding": "STATE_KV",
+      "id": "placeholder-will-be-set-after-creation"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",

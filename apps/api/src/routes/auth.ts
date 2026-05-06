@@ -1,23 +1,39 @@
 import { Hono } from "hono";
 import { HonoEnv } from "../types";
-import { generateAuthUrl, exchangeCodeForTokens } from "../lib/oauth";
-import { credentials } from "../db/schema";
+import { generateAuthUrl, exchangeCodeForTokens, saveState, verifyState } from "../lib/oauth";
+import { credentials, channels } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 const authApp = new Hono<HonoEnv>();
 
-authApp.get("/", (c) => {
+authApp.get("/", async (c) => {
+  const channelId = c.req.query("channelId");
+  if (!channelId) {
+    return c.text("channelId query parameter is required", 400);
+  }
+
+  const state = crypto.randomUUID();
+  await saveState(c.env.STATE_KV, state, channelId);
+
   const authUrl = generateAuthUrl(
     c.env.YOUTUBE_CLIENT_ID,
-    c.env.YOUTUBE_REDIRECT_URL
+    c.env.YOUTUBE_REDIRECT_URL,
+    state
   );
   return c.redirect(authUrl);
 });
 
 authApp.get("/callback", async (c) => {
   const code = c.req.query("code");
-  if (!code) {
-    return c.text("Authorization code not found", 400);
+  const state = c.req.query("state");
+
+  if (!code || !state) {
+    return c.text("Authorization code or state not found", 400);
+  }
+
+  const channelId = await verifyState(c.env.STATE_KV, state);
+  if (!channelId) {
+    return c.text("Invalid or expired state", 403);
   }
 
   try {
@@ -28,26 +44,25 @@ authApp.get("/callback", async (c) => {
       c.env.YOUTUBE_REDIRECT_URL
     );
 
-    // credentialsテーブルのID=1を更新または挿入する
-    const existing = await c.var.db
-      .select()
-      .from(credentials)
-      .where(eq(credentials.id, 1))
-      .get();
+    const db = c.var.db;
 
-    if (existing) {
-      await c.var.db
-        .update(credentials)
-        .set({ accessToken, refreshToken })
-        .where(eq(credentials.id, 1));
-    } else {
-      await c.var.db
-        .insert(credentials)
-        .values({ id: 1, accessToken, refreshToken });
-    }
+    // クレデンシャルを新規保存
+    const [newCred] = await db
+      .insert(credentials)
+      .values({ accessToken, refreshToken })
+      .returning();
+
+    // チャンネルに紐付ける
+    await db
+      .update(channels)
+      .set({ credentialId: newCred.id })
+      .where(eq(channels.discordChannelId, channelId));
 
     return c.json(
-      { success: true, message: "Authentication successful. You can close this window." },
+      { 
+        success: true, 
+        message: `Authentication successful for channel ${channelId}. You can close this window.` 
+      },
       200
     );
   } catch (e) {

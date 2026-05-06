@@ -13,11 +13,17 @@ interface TokenResponse {
 
 /** D1からアクセストークンを取得する */
 export async function getAccessToken(
-  db: DrizzleD1Database<typeof schema>
+  db: DrizzleD1Database<typeof schema>,
+  credentialId: number
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  const row = await db.select().from(schema.credentials).get();
+  const row = await db
+    .select()
+    .from(schema.credentials)
+    .where(eq(schema.credentials.id, credentialId))
+    .get();
+
   if (!row) {
-    throw new Error("No credentials found in database. Please authenticate via /auth first.");
+    throw new Error(`No credentials found for ID: ${credentialId}`);
   }
   return { accessToken: row.accessToken, refreshToken: row.refreshToken };
 }
@@ -25,6 +31,7 @@ export async function getAccessToken(
 /** リフレッシュトークンを使って新しいアクセストークンを取得し、D1に保存する */
 export async function refreshAccessToken(
   db: DrizzleD1Database<typeof schema>,
+  credentialId: number,
   refreshToken: string,
   clientId: string,
   clientSecret: string
@@ -48,15 +55,19 @@ export async function refreshAccessToken(
   const data = (await response.json()) as TokenResponse;
 
   // D1のアクセストークンを更新
-  await db
+  const result = await db
     .update(schema.credentials)
     .set({ accessToken: data.access_token })
-    .where(eq(schema.credentials.id, 1));
+    .where(eq(schema.credentials.id, credentialId));
+
+  if (result.success === false) {
+    throw new Error(`Failed to update credentials in D1 for ID: ${credentialId}`);
+  }
 
   return data.access_token;
 }
 
-/** OAuth認証コードからトークンを取得する */
+/** OAuth認証コードからトークンを取得し、D1に保存または更新する */
 export async function exchangeCodeForTokens(
   code: string,
   clientId: string,
@@ -95,7 +106,8 @@ export async function exchangeCodeForTokens(
 /** OAuth認証URLを生成する */
 export function generateAuthUrl(
   clientId: string,
-  redirectUri: string
+  redirectUri: string,
+  state: string
 ): string {
   const params = new URLSearchParams({
     client_id: clientId,
@@ -104,6 +116,27 @@ export function generateAuthUrl(
     scope: "https://www.googleapis.com/auth/youtube",
     access_type: "offline",
     prompt: "consent",
+    state: state,
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+}
+
+/** KVを使用してstateを検証する */
+export async function verifyState(
+  kv: KVNamespace,
+  state: string
+): Promise<string | null> {
+  const stored = await kv.get(`state:${state}`);
+  if (!stored) return null;
+  await kv.delete(`state:${state}`);
+  return stored; // 紐づけておいたchannelId等を返す
+}
+
+/** KVにstateを保存する */
+export async function saveState(
+  kv: KVNamespace,
+  state: string,
+  data: string
+): Promise<void> {
+  await kv.put(`state:${state}`, data, { expirationTtl: 300 }); // 5分間有効
 }
