@@ -1,5 +1,4 @@
-import { GatewayIntentBits } from "discord.js";
-import { Client } from "discord.js";
+import { GatewayIntentBits, Client } from "discord.js";
 import { attachEvents } from "./events";
 
 export function startDiscordBot() {
@@ -15,5 +14,5 @@ export function startDiscordBot() {
 
   attachEvents(client);
 
-  client.login();
+  client.login(process.env.DISCORD_TOKEN);
 }

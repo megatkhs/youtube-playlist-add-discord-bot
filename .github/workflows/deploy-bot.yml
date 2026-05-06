@@ -1,0 +1,68 @@
+name: Deploy Bot to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+# OIDC 認証のために必要
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_NAME: discord-bot
+  GAR_LOCATION: ${{ secrets.GAR_REGION }}-docker.pkg.dev
+  REPOSITORY: ${{ secrets.GCP_PROJECT_ID }}/bot-repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test # CI ジョブが成功した場合のみ実行したいが、ファイルが別なのでここには書けない。同じリポジトリなので main では常にテストがパスしている前提か、あるいは依存させるなら 1つのファイルにまとめるのが良い。
+    # 今回は分かれているため、単純に push main で発火する。
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ secrets.GAR_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build Docker Image
+        run: |
+          IMAGE_PATH=${{ env.GAR_LOCATION }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker build -t $IMAGE_PATH -f apps/bot/Dockerfile .
+          docker push $IMAGE_PATH
+
+      - name: Deploy to Compute Engine
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            IMAGE_PATH=${{ env.GAR_LOCATION }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            
+            # Docker 認証 (VMのサービスアカウントがGARへのアクセス権を持っていれば docker-credential-gcr が使える)
+            gcloud auth configure-docker ${{ secrets.GAR_REGION }}-docker.pkg.dev --quiet
+            
+            # 最新のイメージを取得
+            docker pull $IMAGE_PATH
+            
+            # 既存のコンテナを停止して削除
+            docker stop discord-bot || true
+            docker rm discord-bot || true
+            
+            # 新しいコンテナを起動 (環境変数は .env ファイルをVMに配置しておく想定)
+            docker run -d \
+              --name discord-bot \
+              --restart always \
+              --env-file /opt/bot/.env \
+              $IMAGE_PATH

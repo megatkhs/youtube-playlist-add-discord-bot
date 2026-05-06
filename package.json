@@ -1,24 +1,5 @@
 {
   "name": "youtube-playlist-add-discord-bot",
-  "module": "src/index.ts",
-  "type": "module",
-  "scripts": {
-    "start": "bun run src/index.ts"
-  },
-  "devDependencies": {
-    "@types/node-cron": "^3.0.11",
-    "bun-types": "latest"
-  },
-  "dependencies": {
-    "dayjs": "^1.11.10",
-    "discord.js": "^14.14.1",
-    "google-auth-library": "^9.7.0",
-    "googleapis": "^126.0.1",
-    "hono": "^3.12.12",
-    "microcms-ts-sdk": "^1.1.0",
-    "node-cron": "^3.0.3"
-  },
-  "engines": {
-    "node": "18.18.0"
-  }
+  "private": true,
+  "workspaces": ["apps/*"]
 }

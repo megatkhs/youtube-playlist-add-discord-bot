@@ -1,5 +1,5 @@
 import { Events } from "discord.js";
-import { defineEvent } from "../discord/events";
+import { defineEvent } from "./index";
 
 export default defineEvent({
   name: Events.ClientReady,
