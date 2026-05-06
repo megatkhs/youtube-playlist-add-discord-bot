@@ -7,14 +7,14 @@
     "deploy": "wrangler deploy",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply youtube-playlist-bot --local",
-    "db:migrate:remote": "wrangler d1 migrations apply youtube-playlist-bot --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply youtube-playlist-bot --remote",
+    "types": "wrangler types"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.17"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260506.1",
     "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
