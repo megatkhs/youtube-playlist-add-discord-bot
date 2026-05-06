@@ -1,5 +1,8 @@
 {
   "name": "youtube-playlist-add-discord-bot",
   "private": true,
-  "workspaces": ["apps/*"]
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "test": "bun run --filter '*' test"
+  }
 }
