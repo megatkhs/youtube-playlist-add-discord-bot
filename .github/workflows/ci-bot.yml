@@ -8,11 +8,6 @@ on:
       - 'apps/bot/**'
       - 'package.json'
       - 'bun.lockb'
-  pull_request:
-    paths:
-      - 'apps/bot/**'
-      - 'package.json'
-      - 'bun.lockb'
 
 jobs:
   test:
