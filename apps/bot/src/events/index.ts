@@ -1,16 +1,26 @@
 import path from "node:path";
 import fs from "node:fs";
-import type { Client, ClientEvents, EventModule, ModuleFile } from "discord.js";
+import type { Client, ClientEvents } from "discord.js";
+
+// Bot側の型定義もここにインラインで定義する（d.tsを削除したため）
+export interface EventModule<K extends keyof ClientEvents> {
+  name: K;
+  once?: (...args: ClientEvents[K]) => void;
+  on?: (...args: ClientEvents[K]) => void;
+}
+export interface ModuleFile {
+  default: EventModule<any>;
+}
 
 export async function attachEvents(client: Client): Promise<void> {
-  const eventsPath = path.join(import.meta.dir, "../events/");
+  const eventsPath = path.join(import.meta.dir, "./");
   const eventFiles = fs
     .readdirSync(eventsPath)
-    .filter((file) => file.endsWith(".ts"));
+    .filter((file) => file.endsWith(".ts") && file !== "index.ts");
 
   for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
-    const { default: event }: ModuleFile<EventModule> = await import(filePath);
+    const { default: event }: ModuleFile = await import(filePath);
 
     if (event.once) {
       client.once(event.name, event.once);

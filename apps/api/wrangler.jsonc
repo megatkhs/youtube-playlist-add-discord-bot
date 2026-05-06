@@ -1,0 +1,25 @@
+{
+  "name": "youtube-playlist-bot-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-12-01",
+  "routes": [
+    {
+      "pattern": "api.daily-playlist.megatkhs.com",
+      "custom_domain": true
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "STATE_KV",
+      "id": "ca7e51a41e284d29bddd6717a8d7c825"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "youtube-playlist-bot",
+      "database_id": "61191e60-9703-4002-8f41-3ad10127977d",
+      "migrations_dir": "./drizzle"
+    }
+  ]
+}
