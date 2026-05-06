@@ -173,3 +173,6 @@ dist
 .idea
 
 .wrangler
+
+# Cloudflare Workers generated types
+apps/api/worker-configuration.d.ts
