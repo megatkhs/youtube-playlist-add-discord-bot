@@ -29,17 +29,22 @@ playlistApp.post("/add", async (c) => {
   const db = c.var.db;
 
   try {
-    // 1. チャンネル設定の確認・作成
-    let channel = await db
+    // 1. チャンネル設定の確認
+    const channel = await db
       .select()
       .from(channels)
       .where(eq(channels.discordChannelId, channelId))
       .get();
 
     if (!channel) {
-      const tmp = { discordChannelId: channelId, createMonthlyPlaylist: false };
-      await db.insert(channels).values(tmp);
-      channel = tmp;
+      return c.json(
+        { 
+          success: false, 
+          error: "CHANNEL_NOT_FOUND", 
+          message: "Channel not registered. Please register this channel first." 
+        }, 
+        404
+      );
     }
 
     if (!channel.credentialId) {
