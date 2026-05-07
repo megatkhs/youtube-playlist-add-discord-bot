@@ -1,0 +1,47 @@
+name: Create Release PR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create or Update release branch
+        run: |
+          git fetch origin main develop
+          git checkout main
+          git reset --hard origin/main
+          git checkout -B release
+          git merge origin/develop --no-ff -m "Merge develop into release"
+          git push origin release --force
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_EXISTS=$(gh pr list --head release --base main --state open --json number --jq 'length')
+          
+          if [ "$PR_EXISTS" -eq "0" ]; then
+            gh pr create \
+              --base main \
+              --head release \
+              --title "Release: Merge release into main" \
+              --body "This PR was manually triggered to merge the latest develop changes into main via the release branch."
+          else
+            echo "A pull request for release already exists."
+          fi

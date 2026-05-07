@@ -122,10 +122,6 @@ playlistApp.post("/add", async (c) => {
       })
     );
 
-    // 一つでも "ALREADY_EXISTS" があれば ALREADY_EXISTS とみなす（既存の仕様を踏襲）
-    const alreadyExists = results.some(
-      (r) => r.status === "rejected" && r.reason.message === "ALREADY_EXISTS"
-    );
     const failed = results.some(
       (r) => r.status === "rejected" && r.reason.message !== "ALREADY_EXISTS"
     );
@@ -133,7 +129,14 @@ playlistApp.post("/add", async (c) => {
     if (failed) {
       return c.json({ success: false, error: "FAILED_TO_ADD" }, 500);
     }
-    if (alreadyExists) {
+
+    const addedCount = results.filter((r) => r.status === "fulfilled").length;
+    const alreadyExistsCount = results.filter(
+      (r) => r.status === "rejected" && r.reason.message === "ALREADY_EXISTS"
+    ).length;
+
+    // どのプレイリストにも追加されず、すでに存在している場合のみ ALREADY_EXISTS とみなす
+    if (addedCount === 0 && alreadyExistsCount > 0) {
       return c.json({ success: false, error: "ALREADY_EXISTS" }, 409);
     }
 
