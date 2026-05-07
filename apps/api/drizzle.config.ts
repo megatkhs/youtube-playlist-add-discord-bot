@@ -5,7 +5,7 @@ import fs from "node:fs";
 
 dotenv.config();
 
-function getLocalD1DB(): string {
+function getLocalD1DB() {
   try {
     const basePath = path.resolve(".wrangler/state/v3/d1/miniflare-D1DatabaseObject");
     const dbFile = fs
@@ -20,7 +20,6 @@ function getLocalD1DB(): string {
     return url;
   } catch (err) {
     console.error(`Error  ${err}`);
-    process.exit(1);
   }
 }
 
@@ -28,7 +27,18 @@ export default defineConfig({
   out: "./drizzle",
   schema: "./src/db/schema.ts",
   dialect: "sqlite",
-  dbCredentials: {
-    url: getLocalD1DB(),
-  }
+  ...(process.env.NODE_ENV === "production"
+    ? {
+      driver: "d1-http",
+      dbCredentials: {
+        accountId: process.env.CLOUDFLARE_D1_ACCOUNT_ID,
+        databaseId: process.env.DATABASE,
+        token: process.env.CLOUDFLARE_D1_API_TOKEN,
+      },
+    }
+    : {
+      dbCredentials: {
+        url: getLocalD1DB(),
+      },
+    }),
 });

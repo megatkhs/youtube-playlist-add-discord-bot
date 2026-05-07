@@ -8,6 +8,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply youtube-playlist-bot --local",
     "db:migrate:remote": "wrangler d1 migrations apply youtube-playlist-bot --remote",
+    "db:studio:local": "drizzle-kit studio",
+    "db:studio:remote": "NODE_ENV=production drizzle-kit studio",
     "gen:cf": "wrangler types",
     "test": "vitest run"
   },
