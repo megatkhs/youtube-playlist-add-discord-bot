@@ -1,0 +1,1 @@
+ALTER TABLE `channels` ADD `credential_id` integer REFERENCES credentials(id);
