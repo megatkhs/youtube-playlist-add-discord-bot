@@ -1,0 +1,30 @@
+name: Create GitHub Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # タイムゾーンを日本時間に設定してタグ名を生成
+          TAG_NAME="release$(TZ='Asia/Tokyo' date +'%Y-%m-%d-%H%M')"
+          gh release create "$TAG_NAME" \
+            --target main \
+            --title "$TAG_NAME" \
+            --notes "Released at $(TZ='Asia/Tokyo' date +'%Y-%m-%d %H:%M:%S') (JST)"
