@@ -38,7 +38,11 @@ export default defineEvent({
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null) as { error?: string } | null;
+        const data = await response.json().catch(() => null) as { error?: string, message?: string } | null;
+        if (response.status === 404 || data?.error === "CHANNEL_NOT_FOUND") {
+          // チャンネル設定されていない場合は、何もせずに終了
+          return;
+        }
         if (response.status === 409 || data?.error === "ALREADY_EXISTS") {
           throw new ErrorWithReaction("🤔", "すでに存在している動画");
         }
